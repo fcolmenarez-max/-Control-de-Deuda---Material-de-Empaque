@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,11 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- PapaParse para lectura CSV de Google Sheets -->
@@ -18,301 +23,233 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     body {
       font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Modo Oscuro Estilos */
+    .dark body {
       background-color: #0b0f19;
       color: #f8fafc;
     }
-    .glass-card {
+    .dark .glass-card {
       background: rgba(17, 24, 39, 0.85);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
     }
-    .glass-card:hover {
-      border-color: rgba(255, 255, 255, 0.16);
-      transition: all 0.3s ease;
+
+    /* Modo Claro Estilos */
+    body {
+      background-color: #f1f5f9;
+      color: #0f172a;
     }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #111827;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #374151;
-      border-radius: 3px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
-    }
+    .dark .custom-scrollbar::-webkit-scrollbar-track { background: #111827; }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    
+    .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
-    /* Estilos para scrollbar vertical fijo en la tabla */
+    /* Scrollbar vertical para la tabla */
     .table-scroll-container {
       max-height: 480px;
       overflow-y: auto;
       overflow-x: auto;
     }
-    .table-scroll-container th {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background-color: #1e293b;
-    }
-    .table-scroll-container tfoot {
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-      background-color: #0f172a;
-    }
+    .dark .table-scroll-container th { background-color: #1e293b; color: #94a3b8; }
+    .table-scroll-container th { background-color: #f8fafc; color: #475569; position: sticky; top: 0; z-index: 10; }
+    
+    .dark .table-scroll-container tfoot { background-color: #0f172a; }
+    .table-scroll-container tfoot { background-color: #f1f5f9; position: sticky; bottom: 0; z-index: 10; }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 custom-scrollbar">
 
   <!-- HEADER CABECERA Y PRESUPUESTO SUPERIOR -->
   <header class="glass-card p-6 rounded-2xl mb-8 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
-    <div class="flex items-center gap-4">
-      <div class="p-3.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30">
-        <i class="fa-solid fa-boxes-packing text-2xl text-white"></i>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Control de Deuda - Material de Empaque</h1>
+    <div class="flex items-center justify-between w-full lg:w-auto gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-3.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-boxes-packing text-2xl text-white"></i>
         </div>
-        <p class="text-xs md:text-sm text-slate-400 mt-0.5">Gestión estratégica de compromisos, presupuestos y estado de pagos</p>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight dark:text-white text-slate-900">Control de Deuda - Material de Empaque</h1>
+          </div>
+          <p class="text-xs md:text-sm dark:text-slate-400 text-slate-500 mt-0.5">Gestión estratégica de compromisos, presupuestos y estado de pagos</p>
+        </div>
       </div>
+
+      <!-- BOTÓN CONMUTADOR CLARO / OSCURO (MOBILE Y DESKTOP) -->
+      <button onclick="toggleTheme()" class="lg:hidden p-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:scale-105 transition">
+        <i id="theme-icon-mobile" class="fa-solid fa-moon text-lg"></i>
+      </button>
     </div>
 
-    <!-- MÉTRICA SUPERIOR: PRESUPUESTO VS PAGADO -->
-    <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-6 min-w-[320px]">
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Presupuesto Asignado</p>
-        <h2 id="top-presupuesto" class="text-2xl font-black text-indigo-400">$0.00</h2>
-      </div>
-      <div class="h-10 w-[1px] bg-slate-700"></div>
-      <div>
-        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pagado (Métrica)</p>
-        <h2 id="top-pagado" class="text-2xl font-black text-emerald-400">$0.00</h2>
-      </div>
-      <div class="text-right">
-        <span id="top-porcentaje" class="px-2.5 py-1 text-xs font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">0%</span>
+    <div class="flex flex-col sm:flex-row items-center gap-4">
+      <!-- BOTÓN CAMBIO TEMA DESKTOP -->
+      <button onclick="toggleTheme()" class="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 font-semibold text-xs hover:scale-105 transition border border-slate-300 dark:border-slate-700 shadow-sm">
+        <i id="theme-icon-desktop" class="fa-solid fa-moon"></i>
+        <span id="theme-text">Modo Oscuro</span>
+      </button>
+
+      <!-- MÉTRICA SUPERIOR: PRESUPUESTO VS PAGADO -->
+      <div class="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-6 w-full sm:w-auto min-w-[320px]">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Presupuesto Asignado</p>
+          <h2 id="top-presupuesto" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">$0.00</h2>
+        </div>
+        <div class="h-10 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pagado</p>
+          <h2 id="top-pagado" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">$0.00</h2>
+        </div>
+        <div class="text-right">
+          <span id="top-porcentaje" class="px-2.5 py-1 text-xs font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-500/30">0%</span>
+        </div>
       </div>
     </div>
   </header>
 
   <!-- CONTROLES Y FILTROS PRINCIPALES -->
   <section class="glass-card p-5 rounded-2xl mb-8">
-    <div class="flex items-center justify-between mb-4 border-b border-slate-700/60 pb-3">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-        <i class="fa-solid fa-filter text-indigo-400"></i> Filtros Principales
+    <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-700/60 pb-3">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+        <i class="fa-solid fa-filter text-indigo-500"></i> Filtros Principales
       </h2>
-      <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-indigo-400 transition underline">Limpiar Filtros</button>
+      <button onclick="resetFilters()" class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition underline">Limpiar Filtros</button>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      <!-- Filtro Empresa -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Empresa</label>
-        <select id="filter-empresa" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Empresa</label>
+        <select id="filter-empresa" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
           <option value="ALL">Todas las Empresas (Consolidado)</option>
         </select>
       </div>
-      <!-- Filtro Proveedor -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Proveedor</label>
-        <select id="filter-proveedor" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Proveedor</label>
+        <select id="filter-proveedor" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
           <option value="ALL">Todos los Proveedores</option>
         </select>
       </div>
-      <!-- Filtro Mes de Vencimiento -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mes de Vencimiento</label>
-        <select id="filter-mes" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Mes de Vencimiento</label>
+        <select id="filter-mes" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
           <option value="ALL">Todos los Meses</option>
         </select>
       </div>
-      <!-- Filtro Fecha Desde -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Fecha Desde</label>
-        <input type="date" id="filter-fecha-desde" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Fecha Desde</label>
+        <input type="date" id="filter-fecha-desde" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
       </div>
-      <!-- Filtro Fecha Hasta -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Fecha Hasta</label>
-        <input type="date" id="filter-fecha-hasta" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Fecha Hasta</label>
+        <input type="date" id="filter-fecha-hasta" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
       </div>
     </div>
   </section>
 
-  <!-- TARJETAS DE MÉTRICAS / KPIS (USD) -->
+  <!-- TARJETAS DE MÉTRICAS / KPIS -->
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- KPI 1: TOTAL FACTURADO -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
-      <div class="absolute -right-4 -bottom-4 text-blue-500/10 text-8xl font-black group-hover:scale-110 transition duration-500">
-        <i class="fa-solid fa-file-invoice-dollar"></i>
-      </div>
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+        <div class="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">
           <i class="fa-solid fa-receipt text-lg"></i>
         </div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Facturado</p>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Facturado</p>
       </div>
-      <h3 id="kpi-total-facturado" class="text-3xl font-extrabold text-blue-400 tracking-tight">$0.00</h3>
-      <p id="kpi-count-facturas" class="text-xs text-slate-400 mt-2">0 registros acumulados</p>
+      <h3 id="kpi-total-facturado" class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">$0.00</h3>
+      <p id="kpi-count-facturas" class="text-xs text-slate-500 dark:text-slate-400 mt-2">0 registros acumulados</p>
     </div>
 
-    <!-- KPI 2: TOTAL VENCIDO -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
-      <div class="absolute -right-4 -bottom-4 text-rose-500/10 text-8xl font-black group-hover:scale-110 transition duration-500">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-      </div>
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-rose-500/10 text-rose-400 rounded-xl">
+        <div class="p-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl">
           <i class="fa-solid fa-clock-rotate-left text-lg"></i>
         </div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Vencido</p>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Vencido</p>
       </div>
-      <h3 id="kpi-total-vencido" class="text-3xl font-extrabold text-rose-400 tracking-tight">$0.00</h3>
-      <p class="text-xs text-rose-300/80 mt-2">Incluye deudas hasta el día de hoy</p>
+      <h3 id="kpi-total-vencido" class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">$0.00</h3>
+      <p class="text-xs text-rose-600/80 dark:text-rose-300/80 mt-2">Incluye deudas hasta hoy</p>
     </div>
 
-    <!-- KPI 3: TOTAL POR VENCER -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
-      <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-8xl font-black group-hover:scale-110 transition duration-500">
-        <i class="fa-solid fa-calendar-check"></i>
-      </div>
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+        <div class="p-2.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
           <i class="fa-solid fa-hourglass-half text-lg"></i>
         </div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total por Vencer</p>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total por Vencer</p>
       </div>
-      <h3 id="kpi-total-por-vencer" class="text-3xl font-extrabold text-amber-400 tracking-tight">$0.00</h3>
-      <p class="text-xs text-slate-400 mt-2">Compromisos vigentes a futuro</p>
+      <h3 id="kpi-total-por-vencer" class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight">$0.00</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Compromisos vigentes a futuro</p>
     </div>
 
-    <!-- KPI 4: TOTAL PAGADO (SOLO USD) -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
-      <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-8xl font-black group-hover:scale-110 transition duration-500">
-        <i class="fa-solid fa-money-bill-wave"></i>
-      </div>
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
+        <div class="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
           <i class="fa-solid fa-circle-check text-lg"></i>
         </div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pagado (USD)</p>
+        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Pagado (USD)</p>
       </div>
-      <h3 id="kpi-total-pagado" class="text-3xl font-extrabold text-emerald-400 tracking-tight">$0.00</h3>
-      <p id="kpi-pct-pagado" class="text-xs text-emerald-300/80 mt-2">0% liquidado</p>
+      <h3 id="kpi-total-pagado" class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</h3>
+      <p id="kpi-pct-pagado" class="text-xs text-emerald-600/80 dark:text-emerald-300/80 mt-2">0% liquidado</p>
     </div>
   </section>
 
   <!-- BLOQUE DE GRÁFICOS ANALÍTICOS -->
   <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-    
-    <!-- 1. Estado de deuda y pagos por empresa -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Estado de Deuda y Pagos por Empresa</h2>
-          <p class="text-xs text-slate-400">Comparativa simultánea entre Deuda Pendiente vs Pagado</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-chart-column"></i></span>
-      </div>
-      <div class="relative h-72 w-full">
-        <canvas id="chartDeudaPagosEmpresa"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Estado de Deuda y Pagos por Empresa</h2>
+      <div class="relative h-72 w-full"><canvas id="chartDeudaPagosEmpresa"></canvas></div>
     </div>
-
-    <!-- 2. Distribución de la deuda por empresa (Gráfico Circular) -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Distribución de la Deuda por Empresa</h2>
-          <p class="text-xs text-slate-400">Participación porcentual de la deuda global</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-chart-pie"></i></span>
-      </div>
-      <div class="relative h-72 w-full flex items-center justify-center">
-        <canvas id="chartDistribucionDeuda"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Distribución de la Deuda por Empresa</h2>
+      <div class="relative h-72 w-full flex items-center justify-center"><canvas id="chartDistribucionDeuda"></canvas></div>
     </div>
-
-    <!-- 3. Top de Facturación por Proveedor -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Top de Facturación por Proveedor</h2>
-          <p class="text-xs text-slate-400">Proveedores con mayor volumen de compras acumuladas</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-ranking-star"></i></span>
-      </div>
-      <div class="relative h-72 w-full">
-        <canvas id="chartTopFacturacion"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Top de Facturación por Proveedor</h2>
+      <div class="relative h-72 w-full"><canvas id="chartTopFacturacion"></canvas></div>
     </div>
-
-    <!-- 4. Deuda Actual por Proveedor -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Deuda Actual por Proveedor</h2>
-          <p class="text-xs text-slate-400">Monto pendiente por saldar con cada proveedor</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-hand-holding-dollar"></i></span>
-      </div>
-      <div class="relative h-72 w-full">
-        <canvas id="chartDeudaProveedor"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Deuda Actual por Proveedor</h2>
+      <div class="relative h-72 w-full"><canvas id="chartDeudaProveedor"></canvas></div>
     </div>
-
-    <!-- 5. Total Pagado por Proveedor -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Total Pagado por Proveedor</h2>
-          <p class="text-xs text-slate-400">Histórico de giros y pagos realizados por proveedor</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-money-bill-trend-up"></i></span>
-      </div>
-      <div class="relative h-72 w-full">
-        <canvas id="chartPagadoProveedor"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Total Pagado por Proveedor</h2>
+      <div class="relative h-72 w-full"><canvas id="chartPagadoProveedor"></canvas></div>
     </div>
-
-    <!-- 6. Vencimiento por Mes -->
     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Vencimiento por Mes</h2>
-          <p class="text-xs text-slate-400">Cronograma de vencimientos de deuda</p>
-        </div>
-        <span class="p-2 bg-slate-800 rounded-lg text-slate-400 text-xs"><i class="fa-solid fa-calendar-days"></i></span>
-      </div>
-      <div class="relative h-72 w-full">
-        <canvas id="chartVencimientoMes"></canvas>
-      </div>
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">Vencimiento por Mes</h2>
+      <div class="relative h-72 w-full"><canvas id="chartVencimientoMes"></canvas></div>
     </div>
-
   </section>
 
-  <!-- DETALLE CONSOLIDADO DE FACTURAS (CON DESPLAZAMIENTO VERTICAL FIJO Y TOTALES FIJOS) -->
+  <!-- DETALLE CONSOLIDADO DE FACTURAS -->
   <section class="glass-card p-6 rounded-2xl mb-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <div>
-        <h2 class="text-lg font-bold text-slate-100">Detalle Consolidado de Facturas</h2>
-        <p class="text-xs text-slate-400">Lista completa navegable con desplazamiento vertical y búsqueda interactiva</p>
+        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Detalle Consolidado de Facturas</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Lista completa navegable con desplazamiento vertical</p>
       </div>
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <div class="relative w-full sm:w-80">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-xs text-slate-500"></i>
-          <input type="text" id="search-input" onkeyup="applyFilters()" placeholder="Buscar por empresa, proveedor, ref..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-8 pr-4 py-2 focus:border-indigo-500 focus:outline-none">
-        </div>
+      <div class="relative w-full sm:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-xs text-slate-400"></i>
+        <input type="text" id="search-input" onkeyup="applyFilters()" placeholder="Buscar..." class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl pl-8 pr-4 py-2 focus:border-indigo-500 focus:outline-none">
       </div>
     </div>
 
-    <!-- CONTENEDOR CON DESPLAZAMIENTO VERTICAL Y HORIZONTAL -->
-    <div class="table-scroll-container custom-scrollbar rounded-xl border border-slate-700/60">
-      <table class="w-full text-left text-xs text-slate-300 relative">
-        <thead class="bg-slate-800 uppercase font-bold text-slate-400 text-[10px] tracking-wider border-b border-slate-700">
+    <div class="table-scroll-container custom-scrollbar rounded-xl border border-slate-200 dark:border-slate-700/60">
+      <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300 relative">
+        <thead class="uppercase font-bold text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
           <tr>
             <th class="py-3.5 px-4">Empresa</th>
             <th class="py-3.5 px-4">Proveedor</th>
@@ -326,33 +263,28 @@
             <th class="py-3.5 px-4 text-center">Estatus Vencimiento</th>
           </tr>
         </thead>
-        <tbody id="table-body" class="divide-y divide-slate-800 font-medium">
-          <!-- Transacciones insertadas dinámicamente -->
-        </tbody>
-        <!-- FILA DE TOTALES DINÁMICOS PEGAJOSA EN EL PIE DE LA TABLA -->
-        <tfoot class="bg-slate-900 font-bold border-t-2 border-slate-600 text-slate-100">
+        <tbody id="table-body" class="divide-y divide-slate-200 dark:divide-slate-800 font-medium"></tbody>
+        <tfoot class="font-bold border-t-2 border-slate-300 dark:border-slate-600">
           <tr>
-            <td colspan="5" class="py-3.5 px-4 text-right uppercase text-[11px] tracking-wider text-indigo-300">Total Filtrado:</td>
-            <td id="foot-total-usd" class="py-3.5 px-4 text-right text-emerald-400 font-extrabold text-sm">$0.00</td>
-            <td id="foot-total-bs" class="py-3.5 px-4 text-right text-slate-200 font-extrabold text-sm">Bs 0.00</td>
+            <td colspan="5" class="py-3.5 px-4 text-right uppercase text-[11px] tracking-wider text-indigo-600 dark:text-indigo-300">Total Filtrado:</td>
+            <td id="foot-total-usd" class="py-3.5 px-4 text-right text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">$0.00</td>
+            <td id="foot-total-bs" class="py-3.5 px-4 text-right text-slate-800 dark:text-slate-200 font-extrabold text-sm">Bs 0.00</td>
             <td colspan="3" class="py-3.5 px-4"></td>
           </tr>
         </tfoot>
       </table>
     </div>
-    
-    <div class="mt-4 flex justify-between items-center text-xs text-slate-400">
+    <div class="mt-4 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
       <span id="table-info">Mostrando 0 registros</span>
-      <span class="text-[11px] text-slate-500">Sincronizado en tiempo real desde Google Sheet</span>
     </div>
   </section>
 
-  <!-- LÓGICA JAVASCRIPT CONECTADA A GOOGLE SHEETS -->
   <script>
     const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1X7YNu0otoWF4L6TyYWMxG4vRqPmVhoqdQRqWGmgL6F4/gviz/tq?tqx=out:csv';
 
     let rawData = [];
     let filteredData = [];
+    let isDarkMode = true;
 
     // Instancias de Chart.js
     let chartDeudaPagosEmpresaInst = null;
@@ -361,6 +293,26 @@
     let chartDeudaProveedorInst = null;
     let chartPagadoProveedorInst = null;
     let chartVencimientoMesInst = null;
+
+    // LÓGICA CAMBIO DE TEMA MODO CLARO / OSCURO
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      const html = document.documentElement;
+      
+      if (isDarkMode) {
+        html.classList.add('dark');
+        document.getElementById('theme-text').innerText = 'Modo Oscuro';
+        document.getElementById('theme-icon-desktop').className = 'fa-solid fa-moon';
+        document.getElementById('theme-icon-mobile').className = 'fa-solid fa-moon';
+      } else {
+        html.classList.remove('dark');
+        document.getElementById('theme-text').innerText = 'Modo Claro';
+        document.getElementById('theme-icon-desktop').className = 'fa-solid fa-sun';
+        document.getElementById('theme-icon-mobile').className = 'fa-solid fa-sun';
+      }
+      
+      renderCharts(); // Redibujar gráficos con el tema de color actualizado
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadSheetData();
@@ -376,9 +328,6 @@
             rawData = processRawData(results.data);
           }
           initDashboard();
-        },
-        error: function(err) {
-          console.error("Error al cargar Google Sheet:", err);
         }
       });
     }
@@ -402,9 +351,7 @@
     function parseDate(dateStr) {
       if (!dateStr) return null;
       const parts = dateStr.trim().split('/');
-      if (parts.length === 3) {
-        return new Date(parts[2], parts[1] - 1, parts[0]);
-      }
+      if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
       return new Date(dateStr);
     }
 
@@ -415,14 +362,11 @@
       return data.map(item => {
         const estadoCol = (item['Estado'] || '').toString().toLowerCase().trim();
         const isPaid = estadoCol.includes('publicado');
-        
         const fechaReg = parseDate(item['Fecha']);
         const fechaVto = parseDate(item['Fecha de Vencimiento']);
         
         let esVencido = false;
-        if (!isPaid && fechaVto) {
-          esVencido = fechaVto <= today;
-        }
+        if (!isPaid && fechaVto) esVencido = fechaVto <= today;
 
         return {
           empresa: item['Empresa'] ? item['Empresa'].trim() : 'Sin Empresa',
@@ -433,8 +377,8 @@
           fechaVtoObj: fechaVto,
           referencia: item['Referencia'] || '',
           ordenCompra: item['Orden de Compra'] || '',
-          importeUSD: parseNum(item['Importe referencia']), // Columna G
-          importeBS: parseNum(item['Importe']), // Columna H
+          importeUSD: parseNum(item['Importe referencia']),
+          importeBS: parseNum(item['Importe']),
           tasa: parseNum(item['Tasa']),
           presupuesto: parseNum(item['Presupuesto']),
           estadoOriginal: item['Estado'] ? item['Estado'].trim() : 'borrador',
@@ -451,13 +395,9 @@
     }
 
     function populateFilters() {
-      const empresas = [...new Set(rawData.map(d => d.empresa))].sort();
-      const proveedores = [...new Set(rawData.map(d => d.proveedor))].sort();
-      const meses = [...new Set(rawData.map(d => d.mesVto))].sort();
-
-      fillSelect('filter-empresa', empresas);
-      fillSelect('filter-proveedor', proveedores);
-      fillSelect('filter-mes', meses);
+      fillSelect('filter-empresa', [...new Set(rawData.map(d => d.empresa))].sort());
+      fillSelect('filter-proveedor', [...new Set(rawData.map(d => d.proveedor))].sort());
+      fillSelect('filter-mes', [...new Set(rawData.map(d => d.mesVto))].sort());
     }
 
     function fillSelect(id, items) {
@@ -497,7 +437,6 @@
         if (fEmpresa !== 'ALL' && d.empresa !== fEmpresa) return false;
         if (fProveedor !== 'ALL' && d.proveedor !== fProveedor) return false;
         if (fMes !== 'ALL' && d.mesVto !== fMes) return false;
-        
         if (dDesde && d.fechaVtoObj && d.fechaVtoObj < dDesde) return false;
         if (dHasta && d.fechaVtoObj && d.fechaVtoObj > dHasta) return false;
 
@@ -520,10 +459,8 @@
     function updateMetrics() {
       const totalFacturado = filteredData.reduce((acc, c) => acc + c.importeUSD, 0);
       const totalPagado = filteredData.filter(d => d.isPaid).reduce((acc, c) => acc + c.importeUSD, 0);
-      
       const totalVencido = filteredData.filter(d => !d.isPaid && d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalPorVencer = filteredData.filter(d => !d.isPaid && !d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
-
       const totalPresupuesto = filteredData.reduce((acc, c) => acc + c.presupuesto, 0);
 
       document.getElementById('top-presupuesto').innerText = '$' + (totalPresupuesto > 0 ? totalPresupuesto : totalFacturado).toLocaleString('en-US', {minimumFractionDigits:2});
@@ -542,9 +479,10 @@
     }
 
     function renderCharts() {
+      const textColor = isDarkMode ? '#cbd5e1' : '#475569';
+      const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
       const empresas = [...new Set(rawData.map(d => d.empresa))].sort();
 
-      // 1. Estado de deuda y pagos por empresa
       const deudaEmp = {};
       const pagadoEmp = {};
       empresas.forEach(e => { deudaEmp[e] = 0; pagadoEmp[e] = 0; });
@@ -554,6 +492,7 @@
         else deudaEmp[d.empresa] += d.importeUSD;
       });
 
+      // Chart 1
       if (chartDeudaPagosEmpresaInst) chartDeudaPagosEmpresaInst.destroy();
       chartDeudaPagosEmpresaInst = new Chart(document.getElementById('chartDeudaPagosEmpresa'), {
         type: 'bar',
@@ -564,39 +503,21 @@
             { label: 'Total Pagado ($)', data: empresas.map(e => pagadoEmp[e]), backgroundColor: '#10b981', borderRadius: 6 }
           ]
         },
-        options: { 
-          responsive: true, 
-          maintainAspectRatio: false,
-          scales: {
-            x: { ticks: { color: '#cbd5e1', font: { size: 10 } } },
-            y: { ticks: { color: '#94a3b8' } }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
       });
 
-      // 2. Distribución de la deuda por empresa
+      // Chart 2
       if (chartDistribucionDeudaInst) chartDistribucionDeudaInst.destroy();
       chartDistribucionDeudaInst = new Chart(document.getElementById('chartDistribucionDeuda'), {
         type: 'doughnut',
         data: {
           labels: empresas,
-          datasets: [{
-            data: empresas.map(e => deudaEmp[e]),
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
-            borderWidth: 2, borderColor: '#0b0f19'
-          }]
+          datasets: [{ data: empresas.map(e => deudaEmp[e]), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'] }]
         },
-        options: { 
-          responsive: true, 
-          maintainAspectRatio: false, 
-          cutout: '65%',
-          plugins: {
-            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
       });
 
-      // 3. Top Facturación por Proveedor
+      // Chart 3
       const factProv = {};
       filteredData.forEach(d => { factProv[d.proveedor] = (factProv[d.proveedor] || 0) + d.importeUSD; });
       const topFact = Object.entries(factProv).sort((a,b) => b[1] - a[1]).slice(0, 5);
@@ -604,14 +525,11 @@
       if (chartTopFacturacionInst) chartTopFacturacionInst.destroy();
       chartTopFacturacionInst = new Chart(document.getElementById('chartTopFacturacion'), {
         type: 'bar',
-        data: {
-          labels: topFact.map(x => x[0]),
-          datasets: [{ label: 'Total Facturado ($)', data: topFact.map(x => x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+        data: { labels: topFact.map(x => x[0]), datasets: [{ label: 'Total Facturado ($)', data: topFact.map(x => x[1]), backgroundColor: '#3b82f6', borderRadius: 6 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor } } } }
       });
 
-      // 4. Deuda Actual por Proveedor
+      // Chart 4
       const deudaProv = {};
       filteredData.filter(d => !d.isPaid).forEach(d => { deudaProv[d.proveedor] = (deudaProv[d.proveedor] || 0) + d.importeUSD; });
       const topDeuda = Object.entries(deudaProv).sort((a,b) => b[1] - a[1]).slice(0, 5);
@@ -619,14 +537,11 @@
       if (chartDeudaProveedorInst) chartDeudaProveedorInst.destroy();
       chartDeudaProveedorInst = new Chart(document.getElementById('chartDeudaProveedor'), {
         type: 'bar',
-        data: {
-          labels: topDeuda.map(x => x[0]),
-          datasets: [{ label: 'Deuda Actual ($)', data: topDeuda.map(x => x[1]), backgroundColor: '#f43f5e', borderRadius: 6 }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+        data: { labels: topDeuda.map(x => x[0]), datasets: [{ label: 'Deuda Actual ($)', data: topDeuda.map(x => x[1]), backgroundColor: '#f43f5e', borderRadius: 6 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor } } } }
       });
 
-      // 5. Total Pagado por Proveedor
+      // Chart 5
       const pagadoProv = {};
       filteredData.filter(d => d.isPaid).forEach(d => { pagadoProv[d.proveedor] = (pagadoProv[d.proveedor] || 0) + d.importeUSD; });
       const topPagado = Object.entries(pagadoProv).sort((a,b) => b[1] - a[1]).slice(0, 5);
@@ -634,25 +549,19 @@
       if (chartPagadoProveedorInst) chartPagadoProveedorInst.destroy();
       chartPagadoProveedorInst = new Chart(document.getElementById('chartPagadoProveedor'), {
         type: 'bar',
-        data: {
-          labels: topPagado.map(x => x[0]),
-          datasets: [{ label: 'Total Pagado ($)', data: topPagado.map(x => x[1]), backgroundColor: '#10b981', borderRadius: 6 }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+        data: { labels: topPagado.map(x => x[0]), datasets: [{ label: 'Total Pagado ($)', data: topPagado.map(x => x[1]), backgroundColor: '#10b981', borderRadius: 6 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor } } } }
       });
 
-      // 6. Vencimiento por Mes
+      // Chart 6
       const mesMap = {};
       filteredData.filter(d => !d.isPaid).forEach(d => { mesMap[d.mesVto] = (mesMap[d.mesVto] || 0) + d.importeUSD; });
 
       if (chartVencimientoMesInst) chartVencimientoMesInst.destroy();
       chartVencimientoMesInst = new Chart(document.getElementById('chartVencimientoMes'), {
         type: 'line',
-        data: {
-          labels: Object.keys(mesMap).map(m => m.toUpperCase()),
-          datasets: [{ label: 'Vencimientos ($)', data: Object.values(mesMap), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', fill: true, tension: 0.3 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
+        data: { labels: Object.keys(mesMap).map(m => m.toUpperCase()), datasets: [{ label: 'Vencimientos ($)', data: Object.values(mesMap), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.15)', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor } } } }
       });
     }
 
@@ -661,55 +570,44 @@
       tbody.innerHTML = '';
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-500">No se encontraron registros.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">No se encontraron registros.</td></tr>';
         document.getElementById('table-info').innerText = '0 registros';
         document.getElementById('foot-total-usd').innerText = '$0.00';
         document.getElementById('foot-total-bs').innerText = 'Bs 0.00';
         return;
       }
 
-      let sumUsd = 0;
-      let sumBs = 0;
+      let sumUsd = 0, sumBs = 0;
+      filteredData.forEach(d => { sumUsd += d.importeUSD; sumBs += d.importeBS; });
 
-      filteredData.forEach(d => {
-        sumUsd += d.importeUSD;
-        sumBs += d.importeBS;
-      });
-
-      // SE RENDERIZAN TODOS LOS REGISTROS FILTRADOS (SIN CORTE CORTO) PARA NAVEGAR CON EL SCROLLBAR VERTICAL
       filteredData.forEach(d => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/60';
+        tr.className = 'hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800/60';
 
-        let pagoBadge = '';
-        if (d.isPaid) {
-          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"><i class="fa-solid fa-circle-check text-emerald-400"></i> PAGADO</span>';
-        } else if (d.esVencido) {
-          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40"><i class="fa-solid fa-clock-rotate-left text-rose-400"></i> VENCIDO</span>';
-        } else {
-          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-hourglass-half text-amber-400"></i> POR VENCER</span>';
-        }
+        let pagoBadge = d.isPaid 
+          ? '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40"><i class="fa-solid fa-circle-check text-emerald-500"></i> PAGADO</span>'
+          : (d.esVencido 
+            ? '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/40"><i class="fa-solid fa-clock-rotate-left text-rose-500"></i> VENCIDO</span>'
+            : '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"><i class="fa-solid fa-hourglass-half text-amber-500"></i> POR VENCER</span>');
 
         tr.innerHTML = `
-          <td class="py-3 px-4 text-slate-200 font-semibold truncate max-w-[170px]" title="${d.empresa}">${d.empresa}</td>
-          <td class="py-3 px-4 text-slate-300 truncate max-w-[160px]" title="${d.proveedor}">${d.proveedor}</td>
-          <td class="py-3 px-4 text-slate-400">${d.fechaStr}</td>
-          <td class="py-3 px-4 text-slate-400">${d.fechaVtoStr}</td>
-          <td class="py-3 px-4 text-slate-300 font-mono text-[11px] truncate max-w-[180px]" title="${d.ordenCompra}">${d.ordenCompra || d.referencia}</td>
-          <td class="py-3 px-4 text-right font-bold text-emerald-400">$${d.importeUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-          <td class="py-3 px-4 text-right text-slate-300">Bs ${d.importeBS.toLocaleString('es-VE', {minimumFractionDigits:2})}</td>
-          <td class="py-3 px-4 text-center text-amber-400/90 font-mono text-[11px]">${d.tasa.toFixed(2)}</td>
-          <td class="py-3 px-4 text-center font-mono text-[11px] text-slate-400 capitalize">${d.estadoOriginal}</td>
+          <td class="py-3 px-4 font-semibold truncate max-w-[170px]" title="${d.empresa}">${d.empresa}</td>
+          <td class="py-3 px-4 truncate max-w-[160px]" title="${d.proveedor}">${d.proveedor}</td>
+          <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${d.fechaStr}</td>
+          <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${d.fechaVtoStr}</td>
+          <td class="py-3 px-4 font-mono text-[11px] truncate max-w-[180px]" title="${d.ordenCompra}">${d.ordenCompra || d.referencia}</td>
+          <td class="py-3 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400">$${d.importeUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+          <td class="py-3 px-4 text-right">Bs ${d.importeBS.toLocaleString('es-VE', {minimumFractionDigits:2})}</td>
+          <td class="py-3 px-4 text-center text-amber-600 dark:text-amber-400 font-mono text-[11px]">${d.tasa.toFixed(2)}</td>
+          <td class="py-3 px-4 text-center font-mono text-[11px] text-slate-500 dark:text-slate-400 capitalize">${d.estadoOriginal}</td>
           <td class="py-3 px-4 text-center">${pagoBadge}</td>
         `;
         tbody.appendChild(tr);
       });
 
-      // Totales dinámicos en el pie de página
       document.getElementById('foot-total-usd').innerText = '$' + sumUsd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
       document.getElementById('foot-total-bs').innerText = 'Bs ' + sumBs.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2});
-
-      document.getElementById('table-info').innerText = `Mostrando ${filteredData.length} de ${filteredData.length} registros (desplazamiento vertical activo)`;
+      document.getElementById('table-info').innerText = `Mostrando ${filteredData.length} de ${filteredData.length} registros`;
     }
   </script>
 </body>
