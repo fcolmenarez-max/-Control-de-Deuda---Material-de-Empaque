@@ -106,7 +106,7 @@
       <!-- MÉTRICA SUPERIOR CINTILLO: PRESUPUESTO VS TOTAL PAGADO + FILTRO DE FECHAS PAGADAS -->
       <div class="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 w-full xl:w-auto">
         
-        <!-- SECCIÓN IZQUIERDA: PRESUPUESTO ASIGNADO (NO VARÍA POR RANGOS DE FECHA) -->
+        <!-- SECCIÓN IZQUIERDA: PRESUPUESTO ASIGNADO -->
         <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
           <div>
             <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Presupuesto Asignado</p>
@@ -117,7 +117,7 @@
 
         <div class="hidden md:block h-12 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
 
-        <!-- SECCIÓN DERECHA: TOTAL PAGADO + FILTRO DE FECHA DE PAGO (COL B + PUBLICADO) -->
+        <!-- SECCIÓN DERECHA: TOTAL PAGADO + FILTRO DE FECHA EXCLUSIVO PARA PAGADO (COL B + PUBLICADO) -->
         <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto bg-emerald-500/5 dark:bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/20">
           <div>
             <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
@@ -126,7 +126,7 @@
             <h2 id="top-pagado" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">$0.00</h2>
           </div>
 
-          <!-- FILTRO RANGO FECHA PAGO (SOLO AFECTA A PAGO) -->
+          <!-- FILTRO RANGO FECHA PAGO (SOLO FILTRA EL TOTAL PAGADO) -->
           <div class="flex items-center gap-1.5 border-t sm:border-t-0 sm:border-l border-emerald-500/20 pt-2 sm:pt-0 sm:pl-3 w-full sm:w-auto">
             <div>
               <label class="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase">Pago Desde</label>
@@ -152,7 +152,7 @@
       <button onclick="resetFilters()" class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition underline">Limpiar Filtros</button>
     </div>
 
-    <!-- FILA DE FILTROS LIMPIA SIN NOTAS NI CAJAS RECARGADAS -->
+    <!-- FILA DE FILTROS LIMPIA -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div>
         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Empresa</label>
@@ -477,14 +477,10 @@
       const dVtoDesde = fVtoDesde ? new Date(fVtoDesde) : null;
       const dVtoHasta = fVtoHasta ? new Date(fVtoHasta) : null;
 
-      // Filtros Pago Realizado (Columna B + Publicado)
-      const fPagoDesde = document.getElementById('filter-pago-desde').value;
-      const fPagoHasta = document.getElementById('filter-pago-hasta').value;
-      const dPagoDesde = fPagoDesde ? new Date(fPagoDesde) : null;
-      const dPagoHasta = fPagoHasta ? new Date(fPagoHasta) : null;
-
       const search = document.getElementById('search-input').value.toLowerCase().trim();
 
+      // filteredData AFECTA TODO EL DASHBOARD (Facturado, Deudas, Gráficos y Tabla)
+      // EXCEPTO el filtro por Rango de Pago
       filteredData = rawData.filter(d => {
         if (fEmpresa !== 'ALL' && d.empresa !== fEmpresa) return false;
         if (fProveedor !== 'ALL' && d.proveedor !== fProveedor) return false;
@@ -493,13 +489,6 @@
         // EVALUACIÓN DE FILTRO DE VENCIMIENTO (COLUMNA C)
         if (dVtoDesde && d.fechaVtoObj && d.fechaVtoObj < dVtoDesde) return false;
         if (dVtoHasta && d.fechaVtoObj && d.fechaVtoObj > dVtoHasta) return false;
-
-        // EVALUACIÓN DE FILTRO DE PAGOS REALIZADOS (COLUMNA B + PUBLICADO)
-        if (dPagoDesde || dPagoHasta) {
-          if (!d.isPaid) return false; // Solo aplica a facturas en estado 'publicado'
-          if (dPagoDesde && d.fechaRegObj && d.fechaRegObj < dPagoDesde) return false;
-          if (dPagoHasta && d.fechaRegObj && d.fechaRegObj > dPagoHasta) return false;
-        }
 
         if (search !== '') {
           const match = d.empresa.toLowerCase().includes(search) ||
@@ -521,7 +510,6 @@
       const fEmpresa = document.getElementById('filter-empresa').value;
 
       // 1. PRESUPUESTO ASIGNADO FIJO:
-      // Depende de la Empresa seleccionada pero NO se altera por filtros de rango de fechas
       const dataForPresupuesto = fEmpresa === 'ALL' 
         ? rawData 
         : rawData.filter(d => d.empresa === fEmpresa);
@@ -529,27 +517,41 @@
       const totalPresupuesto = dataForPresupuesto.reduce((acc, c) => acc + c.presupuesto, 0);
       const totalFacturadoGlobal = dataForPresupuesto.reduce((acc, c) => acc + c.importeUSD, 0);
 
-      // 2. MÉTRICAS DINÁMICAS (Responden a todos los filtros aplicados)
+      // 2. MÉTRICAS DINÁMICAS DEL DASHBOARD (Facturado, Vencidos, Pendiente, etc.)
       const totalFacturado = filteredData.reduce((acc, c) => acc + c.importeUSD, 0);
-      const totalPagado = filteredData.filter(d => d.isPaid).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalVencido = filteredData.filter(d => !d.isPaid && d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalPorVencer = filteredData.filter(d => !d.isPaid && !d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
-      
       const totalDeudaPendiente = totalVencido + totalPorVencer;
+
+      // 3. CÁLCULO EXCLUSIVO DE TOTAL PAGADO:
+      // Afectado ÚNICAMENTE por sus propias fechas de pago ("Pago Desde" y "Pago Hasta") y la Empresa/Proveedor
+      const fPagoDesde = document.getElementById('filter-pago-desde').value;
+      const fPagoHasta = document.getElementById('filter-pago-hasta').value;
+      const dPagoDesde = fPagoDesde ? new Date(fPagoDesde) : null;
+      const dPagoHasta = fPagoHasta ? new Date(fPagoHasta) : null;
+
+      const totalPagadoExclusivo = filteredData.filter(d => {
+        if (!d.isPaid) return false; // Solo 'publicado'
+        if (dPagoDesde && d.fechaRegObj && d.fechaRegObj < dPagoDesde) return false;
+        if (dPagoHasta && d.fechaRegObj && d.fechaRegObj > dPagoHasta) return false;
+        return true;
+      }).reduce((acc, c) => acc + c.importeUSD, 0);
 
       // RENDERIZAR EN INTERFAZ
       const valPresupuestoFinal = totalPresupuesto > 0 ? totalPresupuesto : totalFacturadoGlobal;
       document.getElementById('top-presupuesto').innerText = '$' + valPresupuestoFinal.toLocaleString('en-US', {minimumFractionDigits:2});
-      document.getElementById('top-pagado').innerText = '$' + totalPagado.toLocaleString('en-US', {minimumFractionDigits:2});
+      document.getElementById('top-pagado').innerText = '$' + totalPagadoExclusivo.toLocaleString('en-US', {minimumFractionDigits:2});
       
-      const pctEjecucion = valPresupuestoFinal > 0 ? ((totalPagado / valPresupuestoFinal) * 100).toFixed(1) : '0';
+      const pctEjecucion = valPresupuestoFinal > 0 ? ((totalPagadoExclusivo / valPresupuestoFinal) * 100).toFixed(1) : '0';
       document.getElementById('top-porcentaje').innerText = pctEjecucion + '% Pagado';
 
       document.getElementById('kpi-total-facturado').innerText = '$' + totalFacturado.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-deuda-pendiente').innerText = '$' + totalDeudaPendiente.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-vencido').innerText = '$' + totalVencido.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-por-vencer').innerText = '$' + totalPorVencer.toLocaleString('en-US', {minimumFractionDigits:2});
-      document.getElementById('kpi-total-pagado').innerText = '$' + totalPagado.toLocaleString('en-US', {minimumFractionDigits:2});
+      
+      // La tarjeta KPI de "Total Pagado (USD)" refleja la variable calculada exclusivamente
+      document.getElementById('kpi-total-pagado').innerText = '$' + totalPagadoExclusivo.toLocaleString('en-US', {minimumFractionDigits:2});
 
       document.getElementById('kpi-count-facturas').innerText = filteredData.length + ' registros acumulados';
       document.getElementById('kpi-pct-pagado').innerText = pctEjecucion + '% del total liquidado';
