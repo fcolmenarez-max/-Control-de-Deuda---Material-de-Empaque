@@ -76,8 +76,8 @@
 <body class="min-h-screen p-4 md:p-8 custom-scrollbar">
 
   <!-- HEADER CABECERA Y PRESUPUESTO SUPERIOR -->
-  <header class="glass-card p-6 rounded-2xl mb-8 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
-    <div class="flex items-center justify-between w-full lg:w-auto gap-4">
+  <header class="glass-card p-6 rounded-2xl mb-8 flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-6">
+    <div class="flex items-center justify-between w-full xl:w-auto gap-4">
       <div class="flex items-center gap-4">
         <div class="p-3.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30">
           <i class="fa-solid fa-boxes-packing text-2xl text-white"></i>
@@ -91,32 +91,54 @@
       </div>
 
       <!-- BOTÓN CONMUTADOR CLARO / OSCURO (MOBILE) -->
-      <button onclick="toggleTheme()" class="lg:hidden p-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:scale-105 transition">
+      <button onclick="toggleTheme()" class="xl:hidden p-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:scale-105 transition">
         <i id="theme-icon-mobile" class="fa-solid fa-moon text-lg"></i>
       </button>
     </div>
 
-    <div class="flex flex-col sm:flex-row items-center gap-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
       <!-- BOTÓN CAMBIO TEMA DESKTOP -->
-      <button onclick="toggleTheme()" class="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 font-semibold text-xs hover:scale-105 transition border border-slate-300 dark:border-slate-700 shadow-sm">
+      <button onclick="toggleTheme()" class="hidden xl:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 font-semibold text-xs hover:scale-105 transition border border-slate-300 dark:border-slate-700 shadow-sm">
         <i id="theme-icon-desktop" class="fa-solid fa-moon"></i>
         <span id="theme-text">Modo Oscuro</span>
       </button>
 
-      <!-- MÉTRICA SUPERIOR: PRESUPUESTO VS PAGADO -->
-      <div class="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 flex items-center justify-between gap-6 w-full sm:w-auto min-w-[320px]">
-        <div>
-          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Presupuesto Asignado</p>
-          <h2 id="top-presupuesto" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">$0.00</h2>
+      <!-- MÉTRICA SUPERIOR CINTILLO: PRESUPUESTO VS TOTAL PAGADO + FILTRO DE FECHAS PAGADAS -->
+      <div class="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 w-full xl:w-auto">
+        
+        <!-- SECCIÓN IZQUIERDA: PRESUPUESTO ASIGNADO -->
+        <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Presupuesto Asignado</p>
+            <h2 id="top-presupuesto" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">$0.00</h2>
+          </div>
+          <span id="top-porcentaje" class="px-2.5 py-1 text-xs font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-500/30">0% Pagado</span>
         </div>
-        <div class="h-10 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
-        <div>
-          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pagado</p>
-          <h2 id="top-pagado" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">$0.00</h2>
+
+        <div class="hidden md:block h-12 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
+
+        <!-- SECCIÓN DERECHA: TOTAL PAGADO + NUEVO FILTRO DE FECHA DE PAGO (COL B + PUBLICADO) -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto bg-emerald-500/5 dark:bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/20">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-check"></i> Total Pagado
+            </p>
+            <h2 id="top-pagado" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">$0.00</h2>
+          </div>
+
+          <!-- FILTRO RANGO FECHA PAGO REUBICADO -->
+          <div class="flex items-center gap-1.5 border-t sm:border-t-0 sm:border-l border-emerald-500/20 pt-2 sm:pt-0 sm:pl-3 w-full sm:w-auto">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase">Pago Desde</label>
+              <input type="date" id="filter-pago-desde" onchange="applyFilters()" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] rounded-lg p-1.5 focus:border-emerald-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase">Pago Hasta</label>
+              <input type="date" id="filter-pago-hasta" onchange="applyFilters()" class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] rounded-lg p-1.5 focus:border-emerald-500 focus:outline-none">
+            </div>
+          </div>
         </div>
-        <div class="text-right">
-          <span id="top-porcentaje" class="px-2.5 py-1 text-xs font-bold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-500/30">0%</span>
-        </div>
+
       </div>
     </div>
   </header>
@@ -129,7 +151,9 @@
       </h2>
       <button onclick="resetFilters()" class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition underline">Limpiar Filtros</button>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+    <!-- FILA DE FILTROS SELECTORES -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
       <div>
         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Empresa</label>
         <select id="filter-empresa" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
@@ -148,15 +172,32 @@
           <option value="ALL">Todos los Meses</option>
         </select>
       </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Fecha Desde</label>
-        <input type="date" id="filter-fecha-desde" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+    </div>
+
+    <!-- BLOQUE RANGO DE FECHA DE VENCIMIENTO CON NOTA PROFESIONAL (COLUMNA C) -->
+    <div class="bg-amber-500/5 dark:bg-amber-500/10 p-3.5 rounded-xl border border-amber-500/20 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+      <div class="flex items-center justify-between mb-1.5">
+        <label class="block text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-xmark text-amber-500"></i> Rango por Fecha de Vencimiento
+        </label>
       </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Fecha Hasta</label>
-        <input type="date" id="filter-fecha-hasta" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
+      <!-- NOTA PROFESIONAL EN BLOCKQUOTE ENFÁTICO -->
+      <blockquote class="text-[11px] text-slate-600 dark:text-slate-300 bg-white/60 dark:bg-slate-900/60 p-2 rounded-lg border-l-2 border-amber-500 mb-2.5 font-medium leading-relaxed">
+        <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>
+        <strong>Criterio de Programación:</strong> Filtro exclusivo sobre la <em>Columna C (Fecha de Vencimiento)</em> para proyectar compromisos financieros por día o semanas.
+      </blockquote>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Vencimiento Desde</label>
+          <input type="date" id="filter-vto-desde" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg p-2 focus:border-amber-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Vencimiento Hasta</label>
+          <input type="date" id="filter-vto-hasta" onchange="applyFilters()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg p-2 focus:border-amber-500 focus:outline-none">
+        </div>
       </div>
     </div>
+
   </section>
 
   <!-- TARJETAS DE MÉTRICAS / KPIS (5 TARJETAS) -->
@@ -173,7 +214,7 @@
       <p id="kpi-count-facturas" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">0 registros</p>
     </div>
 
-    <!-- KPI 2: NUEVA TARJETA - TOTAL DEUDA PENDIENTE (VENCIDO + POR VENCER) -->
+    <!-- KPI 2: TOTAL DEUDA PENDIENTE -->
     <div class="glass-card p-5 rounded-2xl relative overflow-hidden group border-l-4 border-l-purple-500">
       <div class="flex items-center gap-3 mb-2">
         <div class="p-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl">
@@ -377,8 +418,8 @@
       return data.map(item => {
         const estadoCol = (item['Estado'] || '').toString().toLowerCase().trim();
         const isPaid = estadoCol.includes('publicado');
-        const fechaReg = parseDate(item['Fecha']);
-        const fechaVto = parseDate(item['Fecha de Vencimiento']);
+        const fechaReg = parseDate(item['Fecha']); // Columna B
+        const fechaVto = parseDate(item['Fecha de Vencimiento']); // Columna C
         
         let esVencido = false;
         if (!isPaid && fechaVto) esVencido = fechaVto <= today;
@@ -392,8 +433,8 @@
           fechaVtoObj: fechaVto,
           referencia: item['Referencia'] || '',
           ordenCompra: item['Orden de Compra'] || '',
-          importeUSD: parseNum(item['Importe referencia']),
-          importeBS: parseNum(item['Importe']),
+          importeUSD: parseNum(item['Importe referencia']), // Columna G
+          importeBS: parseNum(item['Importe']), // Columna H
           tasa: parseNum(item['Tasa']),
           presupuesto: parseNum(item['Presupuesto']),
           estadoOriginal: item['Estado'] ? item['Estado'].trim() : 'borrador',
@@ -431,8 +472,13 @@
       document.getElementById('filter-empresa').value = 'ALL';
       document.getElementById('filter-proveedor').value = 'ALL';
       document.getElementById('filter-mes').value = 'ALL';
-      document.getElementById('filter-fecha-desde').value = '';
-      document.getElementById('filter-fecha-hasta').value = '';
+      
+      document.getElementById('filter-vto-desde').value = '';
+      document.getElementById('filter-vto-hasta').value = '';
+      
+      document.getElementById('filter-pago-desde').value = '';
+      document.getElementById('filter-pago-hasta').value = '';
+
       document.getElementById('search-input').value = '';
       applyFilters();
     }
@@ -441,19 +487,36 @@
       const fEmpresa = document.getElementById('filter-empresa').value;
       const fProveedor = document.getElementById('filter-proveedor').value;
       const fMes = document.getElementById('filter-mes').value;
-      const fDesde = document.getElementById('filter-fecha-desde').value;
-      const fHasta = document.getElementById('filter-fecha-hasta').value;
-      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      
+      // Filtros Vencimiento (Columna C)
+      const fVtoDesde = document.getElementById('filter-vto-desde').value;
+      const fVtoHasta = document.getElementById('filter-vto-hasta').value;
+      const dVtoDesde = fVtoDesde ? new Date(fVtoDesde) : null;
+      const dVtoHasta = fVtoHasta ? new Date(fVtoHasta) : null;
 
-      const dDesde = fDesde ? new Date(fDesde) : null;
-      const dHasta = fHasta ? new Date(fHasta) : null;
+      // Filtros Pago Realizado REUBICADOS EN CINTILLO SUPERIOR (Columna B + Publicado)
+      const fPagoDesde = document.getElementById('filter-pago-desde').value;
+      const fPagoHasta = document.getElementById('filter-pago-hasta').value;
+      const dPagoDesde = fPagoDesde ? new Date(fPagoDesde) : null;
+      const dPagoHasta = fPagoHasta ? new Date(fPagoHasta) : null;
+
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
 
       filteredData = rawData.filter(d => {
         if (fEmpresa !== 'ALL' && d.empresa !== fEmpresa) return false;
         if (fProveedor !== 'ALL' && d.proveedor !== fProveedor) return false;
         if (fMes !== 'ALL' && d.mesVto !== fMes) return false;
-        if (dDesde && d.fechaVtoObj && d.fechaVtoObj < dDesde) return false;
-        if (dHasta && d.fechaVtoObj && d.fechaVtoObj > dHasta) return false;
+
+        // EVALUACIÓN DE FILTRO DE VENCIMIENTO (COLUMNA C)
+        if (dVtoDesde && d.fechaVtoObj && d.fechaVtoObj < dVtoDesde) return false;
+        if (dVtoHasta && d.fechaVtoObj && d.fechaVtoObj > dVtoHasta) return false;
+
+        // EVALUACIÓN DE FILTRO DE PAGOS REALIZADOS EN CINTILLO SUPERIOR (COLUMNA B + PUBLICADO)
+        if (dPagoDesde || dPagoHasta) {
+          if (!d.isPaid) return false; // Solo aplica a facturas en estado 'publicado'
+          if (dPagoDesde && d.fechaRegObj && d.fechaRegObj < dPagoDesde) return false;
+          if (dPagoHasta && d.fechaRegObj && d.fechaRegObj > dPagoHasta) return false;
+        }
 
         if (search !== '') {
           const match = d.empresa.toLowerCase().includes(search) ||
@@ -477,9 +540,7 @@
       const totalVencido = filteredData.filter(d => !d.isPaid && d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalPorVencer = filteredData.filter(d => !d.isPaid && !d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
       
-      // SUMA CONSOLIDADA DE LA DEUDA PENDIENTE (VENCIDO + POR VENCER)
       const totalDeudaPendiente = totalVencido + totalPorVencer;
-      
       const totalPresupuesto = filteredData.reduce((acc, c) => acc + c.presupuesto, 0);
 
       document.getElementById('top-presupuesto').innerText = '$' + (totalPresupuesto > 0 ? totalPresupuesto : totalFacturado).toLocaleString('en-US', {minimumFractionDigits:2});
