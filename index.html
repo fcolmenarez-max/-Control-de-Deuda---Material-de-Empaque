@@ -90,7 +90,7 @@
         </div>
       </div>
 
-      <!-- BOTÓN CONMUTADOR CLARO / OSCURO (MOBILE Y DESKTOP) -->
+      <!-- BOTÓN CONMUTADOR CLARO / OSCURO (MOBILE) -->
       <button onclick="toggleTheme()" class="lg:hidden p-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:scale-105 transition">
         <i id="theme-icon-mobile" class="fa-solid fa-moon text-lg"></i>
       </button>
@@ -159,50 +159,66 @@
     </div>
   </section>
 
-  <!-- TARJETAS DE MÉTRICAS / KPIS -->
-  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
+  <!-- TARJETAS DE MÉTRICAS / KPIS (5 TARJETAS) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <!-- KPI 1: TOTAL FACTURADO -->
+    <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">
-          <i class="fa-solid fa-receipt text-lg"></i>
+        <div class="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">
+          <i class="fa-solid fa-receipt text-base"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Facturado</p>
+        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Facturado</p>
       </div>
-      <h3 id="kpi-total-facturado" class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">$0.00</h3>
-      <p id="kpi-count-facturas" class="text-xs text-slate-500 dark:text-slate-400 mt-2">0 registros acumulados</p>
+      <h3 id="kpi-total-facturado" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">$0.00</h3>
+      <p id="kpi-count-facturas" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">0 registros</p>
     </div>
 
-    <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
+    <!-- KPI 2: NUEVA TARJETA - TOTAL DEUDA PENDIENTE (VENCIDO + POR VENCER) -->
+    <div class="glass-card p-5 rounded-2xl relative overflow-hidden group border-l-4 border-l-purple-500">
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl">
-          <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+        <div class="p-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl">
+          <i class="fa-solid fa-scale-unbalanced-flip text-base"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Vencido</p>
+        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Deuda Pendiente</p>
       </div>
-      <h3 id="kpi-total-vencido" class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">$0.00</h3>
-      <p class="text-xs text-rose-600/80 dark:text-rose-300/80 mt-2">Incluye deudas hasta hoy</p>
+      <h3 id="kpi-total-deuda-pendiente" class="text-2xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight">$0.00</h3>
+      <p class="text-[11px] text-purple-600/80 dark:text-purple-300/80 mt-1.5">Vencido + Por Vencer</p>
     </div>
 
-    <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
+    <!-- KPI 3: TOTAL VENCIDO -->
+    <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
-          <i class="fa-solid fa-hourglass-half text-lg"></i>
+        <div class="p-2 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl">
+          <i class="fa-solid fa-clock-rotate-left text-base"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total por Vencer</p>
+        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Vencido</p>
       </div>
-      <h3 id="kpi-total-por-vencer" class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight">$0.00</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Compromisos vigentes a futuro</p>
+      <h3 id="kpi-total-vencido" class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">$0.00</h3>
+      <p class="text-[11px] text-rose-600/80 dark:text-rose-300/80 mt-1.5">Deuda hasta hoy</p>
     </div>
 
-    <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
+    <!-- KPI 4: TOTAL POR VENCER -->
+    <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
       <div class="flex items-center gap-3 mb-2">
-        <div class="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
-          <i class="fa-solid fa-circle-check text-lg"></i>
+        <div class="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+          <i class="fa-solid fa-hourglass-half text-base"></i>
         </div>
-        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Pagado (USD)</p>
+        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total por Vencer</p>
       </div>
-      <h3 id="kpi-total-pagado" class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</h3>
-      <p id="kpi-pct-pagado" class="text-xs text-emerald-600/80 dark:text-emerald-300/80 mt-2">0% liquidado</p>
+      <h3 id="kpi-total-por-vencer" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight">$0.00</h3>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">Vigentes a futuro</p>
+    </div>
+
+    <!-- KPI 5: TOTAL PAGADO -->
+    <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+          <i class="fa-solid fa-circle-check text-base"></i>
+        </div>
+        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Pagado (USD)</p>
+      </div>
+      <h3 id="kpi-total-pagado" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">$0.00</h3>
+      <p id="kpi-pct-pagado" class="text-[11px] text-emerald-600/80 dark:text-emerald-300/80 mt-1.5">0% liquidado</p>
     </div>
   </section>
 
@@ -294,7 +310,6 @@
     let chartPagadoProveedorInst = null;
     let chartVencimientoMesInst = null;
 
-    // LÓGICA CAMBIO DE TEMA MODO CLARO / OSCURO
     function toggleTheme() {
       isDarkMode = !isDarkMode;
       const html = document.documentElement;
@@ -311,7 +326,7 @@
         document.getElementById('theme-icon-mobile').className = 'fa-solid fa-sun';
       }
       
-      renderCharts(); // Redibujar gráficos con el tema de color actualizado
+      renderCharts();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -461,6 +476,10 @@
       const totalPagado = filteredData.filter(d => d.isPaid).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalVencido = filteredData.filter(d => !d.isPaid && d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
       const totalPorVencer = filteredData.filter(d => !d.isPaid && !d.esVencido).reduce((acc, c) => acc + c.importeUSD, 0);
+      
+      // SUMA CONSOLIDADA DE LA DEUDA PENDIENTE (VENCIDO + POR VENCER)
+      const totalDeudaPendiente = totalVencido + totalPorVencer;
+      
       const totalPresupuesto = filteredData.reduce((acc, c) => acc + c.presupuesto, 0);
 
       document.getElementById('top-presupuesto').innerText = '$' + (totalPresupuesto > 0 ? totalPresupuesto : totalFacturado).toLocaleString('en-US', {minimumFractionDigits:2});
@@ -470,6 +489,7 @@
       document.getElementById('top-porcentaje').innerText = pctEjecucion + '% Pagado';
 
       document.getElementById('kpi-total-facturado').innerText = '$' + totalFacturado.toLocaleString('en-US', {minimumFractionDigits:2});
+      document.getElementById('kpi-total-deuda-pendiente').innerText = '$' + totalDeudaPendiente.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-vencido').innerText = '$' + totalVencido.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-por-vencer').innerText = '$' + totalPorVencer.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-pagado').innerText = '$' + totalPagado.toLocaleString('en-US', {minimumFractionDigits:2});
