@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- PapaParse para Google Sheets CSV -->
+  <!-- PapaParse para lectura CSV de Google Sheets -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -100,9 +100,9 @@
           <option value="ALL">Todos los Proveedores</option>
         </select>
       </div>
-      <!-- Filtro Mes de Registro -->
+      <!-- Filtro Mes de Vencimiento -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mes de Registro</label>
+        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mes de Vencimiento</label>
         <select id="filter-mes" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none">
           <option value="ALL">Todos los Meses</option>
         </select>
@@ -120,7 +120,7 @@
     </div>
   </section>
 
-  <!-- TARJETAS DE MÉTRICAS / KPIS SOLICITADAS (USD) -->
+  <!-- TARJETAS DE MÉTRICAS / KPIS (USD) -->
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <!-- KPI 1: TOTAL FACTURADO -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
@@ -137,7 +137,7 @@
       <p id="kpi-count-facturas" class="text-xs text-slate-400 mt-2">0 registros acumulados</p>
     </div>
 
-    <!-- KPI 2: TOTAL VENCIDO (INCLUYE DÍA EN CURSO) -->
+    <!-- KPI 2: TOTAL VENCIDO -->
     <div class="glass-card p-6 rounded-2xl relative overflow-hidden group">
       <div class="absolute -right-4 -bottom-4 text-rose-500/10 text-8xl font-black group-hover:scale-110 transition duration-500">
         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -183,7 +183,7 @@
     </div>
   </section>
 
-  <!-- BLOQUE DE GRÁFICOS (4 COLS & 2 FILAS) -->
+  <!-- BLOQUE DE GRÁFICOS ANALÍTICOS -->
   <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
     
     <!-- 1. Estado de deuda y pagos por empresa -->
@@ -277,7 +277,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <div>
         <h2 class="text-lg font-bold text-slate-100">Detalle Consolidado de Facturas</h2>
-        <p class="text-xs text-slate-400">Lista completa con estado de pago y variables operativas</p>
+        <p class="text-xs text-slate-400">Lista completa con estado de pago, estado de registro y totales acumulados</p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
         <div class="relative w-full sm:w-80">
@@ -299,12 +299,22 @@
             <th class="py-3.5 px-4 text-right">Importe ($)</th>
             <th class="py-3.5 px-4 text-right">Importe Ref. (Bs)</th>
             <th class="py-3.5 px-4 text-center">Tasa</th>
-            <th class="py-3.5 px-4 text-center">Estado Pago</th>
+            <th class="py-3.5 px-4 text-center">Estado Registro</th>
+            <th class="py-3.5 px-4 text-center">Estatus Vencimiento</th>
           </tr>
         </thead>
         <tbody id="table-body" class="divide-y divide-slate-800 font-medium">
           <!-- Transacciones insertadas dinámicamente -->
         </tbody>
+        <!-- FILA DE TOTALES DINÁMICOS -->
+        <tfoot class="bg-slate-800/90 font-bold border-t-2 border-slate-600 text-slate-100">
+          <tr>
+            <td colspan="5" class="py-3.5 px-4 text-right uppercase text-[11px] tracking-wider text-indigo-300">Total Filtrado:</td>
+            <td id="foot-total-usd" class="py-3.5 px-4 text-right text-emerald-400 font-extrabold text-sm">$0.00</td>
+            <td id="foot-total-bs" class="py-3.5 px-4 text-right text-slate-200 font-extrabold text-sm">Bs 0.00</td>
+            <td colspan="3" class="py-3.5 px-4"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
     
@@ -316,7 +326,7 @@
 
   <!-- LÓGICA JAVASCRIPT CONECTADA A GOOGLE SHEETS -->
   <script>
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTWZD9-QkSRe2yGeXVSjVGjO9l1Ave1GN2UUP8212IBdvuUqN_NZQg0On-pNMwJaqgl52sO4ASs-GSY/pub?output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vTWZD9-QkSRe2yGeXVSjVGjO9l1Ave1GN2UUP8212IBdvuUqN_NZQg0On-pNMwJaqgl52sO4ASs-GSY/pub?output=csv';
+    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1X7YNu0otoWF4L6TyYWMxG4vRqPmVhoqdQRqWGmgL6F4/gviz/tq?tqx=out:csv';
 
     let rawData = [];
     let filteredData = [];
@@ -380,8 +390,9 @@
       today.setHours(23, 59, 59, 999);
 
       return data.map(item => {
-        const refText = item['Referencia'] || item['Diario'] || '';
-        const isPaid = refText.toUpperCase().includes('PAGO') || (item['Status'] && item['Status'].toLowerCase().includes('pag'));
+        // Limpiar el texto de la Columna M (Estado)
+        const estadoCol = (item['Estado'] || '').toString().toLowerCase().trim();
+        const isPaid = estadoCol.includes('publicado');
         
         const fechaReg = parseDate(item['Fecha']);
         const fechaVto = parseDate(item['Fecha de Vencimiento']);
@@ -398,13 +409,13 @@
           fechaVtoStr: item['Fecha de Vencimiento'] || '',
           fechaRegObj: fechaReg,
           fechaVtoObj: fechaVto,
-          referencia: refText,
+          referencia: item['Referencia'] || '',
           ordenCompra: item['Orden de Compra'] || '',
-          importeUSD: parseNum(item['Importe']),
-          importeBS: parseNum(item['Importe referencia']),
+          importeUSD: parseNum(item['Importe referencia']), // Columna G
+          importeBS: parseNum(item['Importe']), // Columna H
           tasa: parseNum(item['Tasa']),
           presupuesto: parseNum(item['Presupuesto']),
-          mesRegistro: item['Mes Registro'] ? item['Mes Registro'].toLowerCase().trim() : 'n/a',
+          estadoOriginal: item['Estado'] ? item['Estado'].trim() : 'borrador',
           mesVto: item['Mes Vto'] ? item['Mes Vto'].toLowerCase().trim() : 'n/a',
           isPaid: isPaid,
           esVencido: esVencido
@@ -420,7 +431,7 @@
     function populateFilters() {
       const empresas = [...new Set(rawData.map(d => d.empresa))].sort();
       const proveedores = [...new Set(rawData.map(d => d.proveedor))].sort();
-      const meses = [...new Set(rawData.map(d => d.mesRegistro))].sort();
+      const meses = [...new Set(rawData.map(d => d.mesVto))].sort();
 
       fillSelect('filter-empresa', empresas);
       fillSelect('filter-proveedor', proveedores);
@@ -463,16 +474,17 @@
       filteredData = rawData.filter(d => {
         if (fEmpresa !== 'ALL' && d.empresa !== fEmpresa) return false;
         if (fProveedor !== 'ALL' && d.proveedor !== fProveedor) return false;
-        if (fMes !== 'ALL' && d.mesRegistro !== fMes) return false;
+        if (fMes !== 'ALL' && d.mesVto !== fMes) return false;
         
-        if (dDesde && d.fechaRegObj && d.fechaRegObj < dDesde) return false;
-        if (dHasta && d.fechaRegObj && d.fechaRegObj > dHasta) return false;
+        if (dDesde && d.fechaVtoObj && d.fechaVtoObj < dDesde) return false;
+        if (dHasta && d.fechaVtoObj && d.fechaVtoObj > dHasta) return false;
 
         if (search !== '') {
           const match = d.empresa.toLowerCase().includes(search) ||
                         d.proveedor.toLowerCase().includes(search) ||
                         d.ordenCompra.toLowerCase().includes(search) ||
-                        d.referencia.toLowerCase().includes(search);
+                        d.referencia.toLowerCase().includes(search) ||
+                        d.estadoOriginal.toLowerCase().includes(search);
           if (!match) return false;
         }
         return true;
@@ -492,14 +504,12 @@
 
       const totalPresupuesto = filteredData.reduce((acc, c) => acc + c.presupuesto, 0);
 
-      // Métrica Superior (Presupuesto vs Pagado)
       document.getElementById('top-presupuesto').innerText = '$' + (totalPresupuesto > 0 ? totalPresupuesto : totalFacturado).toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('top-pagado').innerText = '$' + totalPagado.toLocaleString('en-US', {minimumFractionDigits:2});
       
       const pctEjecucion = totalFacturado > 0 ? ((totalPagado / totalFacturado) * 100).toFixed(1) : '0';
       document.getElementById('top-porcentaje').innerText = pctEjecucion + '% Pagado';
 
-      // Tarjetas KPI
       document.getElementById('kpi-total-facturado').innerText = '$' + totalFacturado.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-vencido').innerText = '$' + totalVencido.toLocaleString('en-US', {minimumFractionDigits:2});
       document.getElementById('kpi-total-por-vencer').innerText = '$' + totalPorVencer.toLocaleString('en-US', {minimumFractionDigits:2});
@@ -512,7 +522,7 @@
     function renderCharts() {
       const empresas = [...new Set(rawData.map(d => d.empresa))].sort();
 
-      // 1. Estado de deuda y pagos por empresa
+      // 1. Estado de deuda y pagos por empresa (Nombres Completos)
       const deudaEmp = {};
       const pagadoEmp = {};
       empresas.forEach(e => { deudaEmp[e] = 0; pagadoEmp[e] = 0; });
@@ -526,13 +536,20 @@
       chartDeudaPagosEmpresaInst = new Chart(document.getElementById('chartDeudaPagosEmpresa'), {
         type: 'bar',
         data: {
-          labels: empresas.map(e => e.split(' ')[0]),
+          labels: empresas,
           datasets: [
             { label: 'Deuda Pendiente ($)', data: empresas.map(e => deudaEmp[e]), backgroundColor: '#f43f5e', borderRadius: 6 },
             { label: 'Total Pagado ($)', data: empresas.map(e => pagadoEmp[e]), backgroundColor: '#10b981', borderRadius: 6 }
           ]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: '#cbd5e1', font: { size: 10 } } },
+            y: { ticks: { color: '#94a3b8' } }
+          }
+        }
       });
 
       // 2. Distribución de la deuda por empresa
@@ -540,14 +557,21 @@
       chartDistribucionDeudaInst = new Chart(document.getElementById('chartDistribucionDeuda'), {
         type: 'doughnut',
         data: {
-          labels: empresas.map(e => e.split(' ')[0]),
+          labels: empresas,
           datasets: [{
             data: empresas.map(e => deudaEmp[e]),
             backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
             borderWidth: 2, borderColor: '#0b0f19'
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false, 
+          cutout: '65%',
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+          }
+        }
       });
 
       // 3. Top Facturación por Proveedor
@@ -597,7 +621,7 @@
 
       // 6. Vencimiento por Mes
       const mesMap = {};
-      filteredData.forEach(d => { mesMap[d.mesVto] = (mesMap[d.mesVto] || 0) + d.importeUSD; });
+      filteredData.filter(d => !d.isPaid).forEach(d => { mesMap[d.mesVto] = (mesMap[d.mesVto] || 0) + d.importeUSD; });
 
       if (chartVencimientoMesInst) chartVencimientoMesInst.destroy();
       chartVencimientoMesInst = new Chart(document.getElementById('chartVencimientoMes'), {
@@ -615,34 +639,56 @@
       tbody.innerHTML = '';
 
       if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-500">No se encontraron registros.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-500">No se encontraron registros.</td></tr>';
         document.getElementById('table-info').innerText = '0 registros';
+        document.getElementById('foot-total-usd').innerText = '$0.00';
+        document.getElementById('foot-total-bs').innerText = 'Bs 0.00';
         return;
       }
+
+      let sumUsd = 0;
+      let sumBs = 0;
+
+      filteredData.forEach(d => {
+        sumUsd += d.importeUSD;
+        sumBs += d.importeBS;
+      });
 
       filteredData.slice(0, 50).forEach(d => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/60';
 
-        const pagoBadge = d.isPaid 
-          ? '<span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">PAGADO</span>'
-          : (d.esVencido 
-            ? '<span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">VENCIDO</span>'
-            : '<span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">POR VENCER</span>');
+        // LÓGICA DE ESTATUS VENCIMIENTO SOLICITADA
+        let pagoBadge = '';
+        if (d.isPaid) {
+          // Si Estado es "publicado": Mostrar ícono de Check Verde
+          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"><i class="fa-solid fa-circle-check text-emerald-400"></i> PAGADO</span>';
+        } else if (d.esVencido) {
+          // Si Estado es "borrador" y Fecha Vto <= Hoy
+          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40"><i class="fa-solid fa-clock-rotate-left text-rose-400"></i> VENCIDO</span>';
+        } else {
+          // Si Estado es "borrador" y Fecha Vto > Hoy
+          pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-hourglass-half text-amber-400"></i> POR VENCER</span>';
+        }
 
         tr.innerHTML = `
-          <td class="py-3 px-4 text-slate-200 font-semibold truncate max-w-[150px]">${d.empresa}</td>
-          <td class="py-3 px-4 text-slate-300 truncate max-w-[160px]">${d.proveedor}</td>
+          <td class="py-3 px-4 text-slate-200 font-semibold truncate max-w-[170px]" title="${d.empresa}">${d.empresa}</td>
+          <td class="py-3 px-4 text-slate-300 truncate max-w-[160px]" title="${d.proveedor}">${d.proveedor}</td>
           <td class="py-3 px-4 text-slate-400">${d.fechaStr}</td>
           <td class="py-3 px-4 text-slate-400">${d.fechaVtoStr}</td>
-          <td class="py-3 px-4 text-slate-300 font-mono text-[11px] truncate max-w-[180px]">${d.ordenCompra || d.referencia}</td>
+          <td class="py-3 px-4 text-slate-300 font-mono text-[11px] truncate max-w-[180px]" title="${d.ordenCompra}">${d.ordenCompra || d.referencia}</td>
           <td class="py-3 px-4 text-right font-bold text-emerald-400">$${d.importeUSD.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
           <td class="py-3 px-4 text-right text-slate-300">Bs ${d.importeBS.toLocaleString('es-VE', {minimumFractionDigits:2})}</td>
           <td class="py-3 px-4 text-center text-amber-400/90 font-mono text-[11px]">${d.tasa.toFixed(2)}</td>
+          <td class="py-3 px-4 text-center font-mono text-[11px] text-slate-400 capitalize">${d.estadoOriginal}</td>
           <td class="py-3 px-4 text-center">${pagoBadge}</td>
         `;
         tbody.appendChild(tr);
       });
+
+      // Totales dinámicos en el pie de página
+      document.getElementById('foot-total-usd').innerText = '$' + sumUsd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      document.getElementById('foot-total-bs').innerText = 'Bs ' + sumBs.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2});
 
       document.getElementById('table-info').innerText = `Mostrando ${Math.min(50, filteredData.length)} de ${filteredData.length} registros`;
     }
