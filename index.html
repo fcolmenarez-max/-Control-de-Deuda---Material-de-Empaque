@@ -42,6 +42,28 @@
       background: #374151;
       border-radius: 3px;
     }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Estilos para scrollbar vertical fijo en la tabla */
+    .table-scroll-container {
+      max-height: 480px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    .table-scroll-container th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #1e293b;
+    }
+    .table-scroll-container tfoot {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      background-color: #0f172a;
+    }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 custom-scrollbar">
@@ -272,12 +294,12 @@
 
   </section>
 
-  <!-- DETALLE CONSOLIDADO DE FACTURAS -->
+  <!-- DETALLE CONSOLIDADO DE FACTURAS (CON DESPLAZAMIENTO VERTICAL FIJO Y TOTALES FIJOS) -->
   <section class="glass-card p-6 rounded-2xl mb-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <div>
         <h2 class="text-lg font-bold text-slate-100">Detalle Consolidado de Facturas</h2>
-        <p class="text-xs text-slate-400">Lista completa con estado de pago, estado de registro y totales acumulados</p>
+        <p class="text-xs text-slate-400">Lista completa navegable con desplazamiento vertical y búsqueda interactiva</p>
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto">
         <div class="relative w-full sm:w-80">
@@ -287,9 +309,10 @@
       </div>
     </div>
 
-    <div class="overflow-x-auto custom-scrollbar rounded-xl border border-slate-700/60">
-      <table class="w-full text-left text-xs text-slate-300">
-        <thead class="bg-slate-800/80 uppercase font-bold text-slate-400 text-[10px] tracking-wider border-b border-slate-700">
+    <!-- CONTENEDOR CON DESPLAZAMIENTO VERTICAL Y HORIZONTAL -->
+    <div class="table-scroll-container custom-scrollbar rounded-xl border border-slate-700/60">
+      <table class="w-full text-left text-xs text-slate-300 relative">
+        <thead class="bg-slate-800 uppercase font-bold text-slate-400 text-[10px] tracking-wider border-b border-slate-700">
           <tr>
             <th class="py-3.5 px-4">Empresa</th>
             <th class="py-3.5 px-4">Proveedor</th>
@@ -306,8 +329,8 @@
         <tbody id="table-body" class="divide-y divide-slate-800 font-medium">
           <!-- Transacciones insertadas dinámicamente -->
         </tbody>
-        <!-- FILA DE TOTALES DINÁMICOS -->
-        <tfoot class="bg-slate-800/90 font-bold border-t-2 border-slate-600 text-slate-100">
+        <!-- FILA DE TOTALES DINÁMICOS PEGAJOSA EN EL PIE DE LA TABLA -->
+        <tfoot class="bg-slate-900 font-bold border-t-2 border-slate-600 text-slate-100">
           <tr>
             <td colspan="5" class="py-3.5 px-4 text-right uppercase text-[11px] tracking-wider text-indigo-300">Total Filtrado:</td>
             <td id="foot-total-usd" class="py-3.5 px-4 text-right text-emerald-400 font-extrabold text-sm">$0.00</td>
@@ -390,7 +413,6 @@
       today.setHours(23, 59, 59, 999);
 
       return data.map(item => {
-        // Limpiar el texto de la Columna M (Estado)
         const estadoCol = (item['Estado'] || '').toString().toLowerCase().trim();
         const isPaid = estadoCol.includes('publicado');
         
@@ -522,7 +544,7 @@
     function renderCharts() {
       const empresas = [...new Set(rawData.map(d => d.empresa))].sort();
 
-      // 1. Estado de deuda y pagos por empresa (Nombres Completos)
+      // 1. Estado de deuda y pagos por empresa
       const deudaEmp = {};
       const pagadoEmp = {};
       empresas.forEach(e => { deudaEmp[e] = 0; pagadoEmp[e] = 0; });
@@ -654,20 +676,17 @@
         sumBs += d.importeBS;
       });
 
-      filteredData.slice(0, 50).forEach(d => {
+      // SE RENDERIZAN TODOS LOS REGISTROS FILTRADOS (SIN CORTE CORTO) PARA NAVEGAR CON EL SCROLLBAR VERTICAL
+      filteredData.forEach(d => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/60';
 
-        // LÓGICA DE ESTATUS VENCIMIENTO SOLICITADA
         let pagoBadge = '';
         if (d.isPaid) {
-          // Si Estado es "publicado": Mostrar ícono de Check Verde
           pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"><i class="fa-solid fa-circle-check text-emerald-400"></i> PAGADO</span>';
         } else if (d.esVencido) {
-          // Si Estado es "borrador" y Fecha Vto <= Hoy
           pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40"><i class="fa-solid fa-clock-rotate-left text-rose-400"></i> VENCIDO</span>';
         } else {
-          // Si Estado es "borrador" y Fecha Vto > Hoy
           pagoBadge = '<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-hourglass-half text-amber-400"></i> POR VENCER</span>';
         }
 
@@ -690,7 +709,7 @@
       document.getElementById('foot-total-usd').innerText = '$' + sumUsd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
       document.getElementById('foot-total-bs').innerText = 'Bs ' + sumBs.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2});
 
-      document.getElementById('table-info').innerText = `Mostrando ${Math.min(50, filteredData.length)} de ${filteredData.length} registros`;
+      document.getElementById('table-info').innerText = `Mostrando ${filteredData.length} de ${filteredData.length} registros (desplazamiento vertical activo)`;
     }
   </script>
 </body>
